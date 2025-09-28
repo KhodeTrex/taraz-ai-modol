@@ -5,6 +5,8 @@ import { newsService } from '../services/newsService';
 import { User, NewsArticle, Role } from '../types';
 import { ADMIN_USERNAME } from '../constants';
 import GlassCard from './common/GlassCard';
+import { useTheme } from '../hooks/useTheme';
+import { Theme } from '../services/themeService';
 
 const Admin: React.FC = () => {
     const { currentUser, logout } = useAuth();
@@ -21,6 +23,28 @@ const Admin: React.FC = () => {
     const [newsTitle, setNewsTitle] = useState('');
     const [newsContent, setNewsContent] = useState('');
     const [newsError, setNewsError] = useState('');
+    
+    // Theme management state
+    const { theme, setTheme, resetTheme } = useTheme();
+    const [editableTheme, setEditableTheme] = useState<Theme>(theme);
+
+    useEffect(() => {
+        setEditableTheme(theme);
+    }, [theme]);
+
+    const handleThemeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const { name, value } = e.target;
+        setEditableTheme(prev => ({ ...prev, [name]: value }));
+    };
+
+    const handleSaveTheme = () => {
+        setTheme(editableTheme);
+    };
+
+    const handleResetTheme = () => {
+        resetTheme();
+    }
+
 
     const fetchData = useCallback(() => {
         setUsers(authService.getAllUsers());
@@ -97,13 +121,13 @@ const Admin: React.FC = () => {
     return (
         <div className="w-full max-w-6xl mx-auto">
             <div className="flex justify-between items-center mb-6 px-4">
-                <h1 className="text-3xl font-bold text-sky-800">داشبورد ادمین</h1>
-                <p className="text-sky-700">خوش آمدید، {currentUser?.username}!</p>
+                <h1 className="text-3xl font-bold text-[var(--color-text-strong)]">داشبورد ادمین</h1>
+                <p className="text-[var(--color-text-muted)]">خوش آمدید، {currentUser?.username}!</p>
                 <button onClick={logout} className="bg-red-500 text-white font-bold py-2 px-4 rounded-lg hover:bg-red-600 transition">خروج</button>
             </div>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 <GlassCard>
-                    <h2 className="text-2xl font-bold text-sky-800 mb-4">مدیریت کاربران</h2>
+                    <h2 className="text-2xl font-bold text-[var(--color-text-strong)] mb-4">مدیریت کاربران</h2>
                     {userSuccess && (
                         <div className="bg-green-100 border-r-4 border-green-500 text-green-700 p-4 mb-4" role="alert">
                             <p>{userSuccess}</p>
@@ -111,16 +135,16 @@ const Admin: React.FC = () => {
                     )}
                     {userError && <p className="text-red-500 text-sm mb-4 text-center">{userError}</p>}
                     <form onSubmit={handleCreateUser} className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-6 items-center">
-                        <input type="text" placeholder="نام کاربری" value={newUsername} onChange={e => setNewUsername(e.target.value)} className="px-3 py-2 bg-white/50 rounded-md focus:ring-sky-500 focus:outline-none"/>
-                        <input type="password" placeholder="رمز عبور" value={newPassword} onChange={e => setNewPassword(e.target.value)} className="px-3 py-2 bg-white/50 rounded-md focus:ring-sky-500 focus:outline-none"/>
-                        <button type="submit" className="bg-sky-500 text-white font-semibold py-2 px-4 rounded-md hover:bg-sky-600 transition">افزودن کاربر</button>
+                        <input type="text" placeholder="نام کاربری" value={newUsername} onChange={e => setNewUsername(e.target.value)} className="px-3 py-2 bg-white/50 rounded-md focus:ring-[var(--color-primary)] focus:outline-none"/>
+                        <input type="password" placeholder="رمز عبور" value={newPassword} onChange={e => setNewPassword(e.target.value)} className="px-3 py-2 bg-white/50 rounded-md focus:ring-[var(--color-primary)] focus:outline-none"/>
+                        <button type="submit" className="bg-[var(--color-primary)] text-white font-semibold py-2 px-4 rounded-md hover:bg-[var(--color-primary-dark)] transition">افزودن کاربر</button>
                     </form>
                     <div className="max-h-80 overflow-y-auto pr-2 space-y-2">
                         {users.map(user => (
                             <div key={user.id} className="flex justify-between items-center p-3 bg-white/30 rounded-lg transition-all hover:bg-white/40 hover:shadow-md">
                                 <div>
-                                    <span className="font-semibold text-sky-900">{user.username}</span>
-                                    <span className={`mr-2 text-xs font-bold px-2 py-1 rounded-full ${user.role === Role.ADMIN ? 'bg-sky-500 text-white' : 'bg-slate-300 text-slate-700'}`}>
+                                    <span className="font-semibold text-[var(--color-text-strong)]">{user.username}</span>
+                                    <span className={`mr-2 text-xs font-bold px-2 py-1 rounded-full ${user.role === Role.ADMIN ? 'bg-[var(--color-primary)] text-white' : 'bg-slate-300 text-slate-700'}`}>
                                         {user.role}
                                     </span>
                                 </div>
@@ -141,11 +165,11 @@ const Admin: React.FC = () => {
                     </div>
                 </GlassCard>
                 <GlassCard>
-                    <h2 className="text-2xl font-bold text-sky-800 mb-4">مدیریت اخبار</h2>
+                    <h2 className="text-2xl font-bold text-[var(--color-text-strong)] mb-4">مدیریت اخبار</h2>
                     <form onSubmit={handleAddNews} className="flex flex-col gap-3 mb-6">
-                        <input type="text" placeholder="عنوان خبر" value={newsTitle} onChange={e => setNewsTitle(e.target.value)} className="px-3 py-2 bg-white/50 rounded-md focus:ring-sky-500 focus:outline-none"/>
-                        <textarea placeholder="محتوای خبر" value={newsContent} onChange={e => setNewsContent(e.target.value)} className="px-3 py-2 bg-white/50 rounded-md h-24 resize-none focus:ring-sky-500 focus:outline-none"/>
-                        <button type="submit" className="bg-sky-500 text-white font-semibold py-2 px-4 rounded-md hover:bg-sky-600 transition">افزودن خبر</button>
+                        <input type="text" placeholder="عنوان خبر" value={newsTitle} onChange={e => setNewsTitle(e.target.value)} className="px-3 py-2 bg-white/50 rounded-md focus:ring-[var(--color-primary)] focus:outline-none"/>
+                        <textarea placeholder="محتوای خبر" value={newsContent} onChange={e => setNewsContent(e.target.value)} className="px-3 py-2 bg-white/50 rounded-md h-24 resize-none focus:ring-[var(--color-primary)] focus:outline-none"/>
+                        <button type="submit" className="bg-[var(--color-primary)] text-white font-semibold py-2 px-4 rounded-md hover:bg-[var(--color-primary-dark)] transition">افزودن خبر</button>
                     </form>
                      {newsError && <p className="text-red-500 text-sm mb-4">{newsError}</p>}
                      <div className="max-h-80 overflow-y-auto pl-2 space-y-2">
@@ -155,6 +179,45 @@ const Admin: React.FC = () => {
                                 <button onClick={() => handleDeleteNews(article.id)} className="text-red-500 hover:text-red-700 font-semibold flex-shrink-0">حذف</button>
                             </div>
                         ))}
+                    </div>
+                </GlassCard>
+            </div>
+            <div className="mt-8">
+                <GlassCard>
+                    <h2 className="text-2xl font-bold text-[var(--color-text-strong)] mb-4">تنظیمات ظاهری</h2>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                        <div className="flex flex-col gap-2">
+                            <label htmlFor="primary" className="font-semibold text-sm text-[var(--color-text-muted)]">رنگ اصلی</label>
+                            <input type="color" id="primary" name="primary" value={editableTheme.primary} onChange={handleThemeChange} className="w-full h-10 p-1 bg-white/50 border border-gray-300 rounded-md cursor-pointer"/>
+                        </div>
+                        <div className="flex flex-col gap-2">
+                            <label htmlFor="primaryDark" className="font-semibold text-sm text-[var(--color-text-muted)]">رنگ اصلی (تیره)</label>
+                            <input type="color" id="primaryDark" name="primaryDark" value={editableTheme.primaryDark} onChange={handleThemeChange} className="w-full h-10 p-1 bg-white/50 border border-gray-300 rounded-md cursor-pointer"/>
+                        </div>
+                         <div className="flex flex-col gap-2">
+                            <label htmlFor="primaryLight" className="font-semibold text-sm text-[var(--color-text-muted)]">رنگ اصلی (روشن)</label>
+                            <input type="color" id="primaryLight" name="primaryLight" value={editableTheme.primaryLight} onChange={handleThemeChange} className="w-full h-10 p-1 bg-white/50 border border-gray-300 rounded-md cursor-pointer"/>
+                        </div>
+                        <div className="flex flex-col gap-2">
+                            <label htmlFor="textStrong" className="font-semibold text-sm text-[var(--color-text-muted)]">متن اصلی</label>
+                            <input type="color" id="textStrong" name="textStrong" value={editableTheme.textStrong} onChange={handleThemeChange} className="w-full h-10 p-1 bg-white/50 border border-gray-300 rounded-md cursor-pointer"/>
+                        </div>
+                        <div className="flex flex-col gap-2">
+                            <label htmlFor="textMuted" className="font-semibold text-sm text-[var(--color-text-muted)]">متن ثانویه</label>
+                            <input type="color" id="textMuted" name="textMuted" value={editableTheme.textMuted} onChange={handleThemeChange} className="w-full h-10 p-1 bg-white/50 border border-gray-300 rounded-md cursor-pointer"/>
+                        </div>
+                        <div className="flex flex-col gap-2">
+                            <label htmlFor="bgGradientFrom" className="font-semibold text-sm text-[var(--color-text-muted)]">گرادینت پس‌زمینه (از)</label>
+                            <input type="color" id="bgGradientFrom" name="bgGradientFrom" value={editableTheme.bgGradientFrom} onChange={handleThemeChange} className="w-full h-10 p-1 bg-white/50 border border-gray-300 rounded-md cursor-pointer"/>
+                        </div>
+                        <div className="flex flex-col gap-2">
+                            <label htmlFor="bgGradientTo" className="font-semibold text-sm text-[var(--color-text-muted)]">گرادینت پس‌زمینه (تا)</label>
+                            <input type="color" id="bgGradientTo" name="bgGradientTo" value={editableTheme.bgGradientTo} onChange={handleThemeChange} className="w-full h-10 p-1 bg-white/50 border border-gray-300 rounded-md cursor-pointer"/>
+                        </div>
+                    </div>
+                    <div className="flex justify-end gap-4 mt-6">
+                        <button onClick={handleResetTheme} className="bg-amber-500 text-white font-semibold py-2 px-6 rounded-md hover:bg-amber-600 transition">بازنشانی</button>
+                        <button onClick={handleSaveTheme} className="bg-[var(--color-primary)] text-white font-semibold py-2 px-6 rounded-md hover:bg-[var(--color-primary-dark)] transition">ذخیره تغییرات</button>
                     </div>
                 </GlassCard>
             </div>

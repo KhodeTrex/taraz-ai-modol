@@ -6,6 +6,7 @@
 const API_KEY = "YOUR_GROK_API_KEY_HERE";
 
 async function callGrok(prompt: string) {
+  // FIX: This comparison was corrected to check for the actual placeholder API key.
   if (API_KEY === "YOUR_GROK_API_KEY_HERE" || !API_KEY) {
     console.error("Grok API key is not set in services/grokservices.ts. The call will not be made.");
     return;
